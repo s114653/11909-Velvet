@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>與 Velvet 的下午茶時間</title>
+    <style>
+        /* 整體風格設計：地獄客棧 Vees 的霓虹暗黑時尚風 */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 遊戲主容器 */
+        .game-container {
+            width: 90%;
+            max-width: 600px;
+            background: linear-gradient(145deg, #1e1e24, #141418);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.3);
+            text-align: center;
+            border: 2px solid #ff007f;
+        }
+
+        /* 圖片置中與樣式 */
+        .image-wrapper {
+            margin: 0 auto 25px auto;
+            max-width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .game-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        /* 文本敘述區 */
+        .story-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            min-height: 60px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        /* 選項按鈕區 */
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* 按鈕基本樣式 */
+        .btn {
+            background-color: #2b2b36;
+            color: #ffffff;
+            border: 1px solid #ff007f;
+            padding: 12px 20px;
+            font-size: 1.05rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        /* 按鈕懸停效果 */
+        .btn:hover {
+            background-color: #ff007f;
+            color: #ffffff;
+            box-shadow: 0 0 10px #ff007f;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* 重新開始按鈕的特殊樣式 */
+        .btn-restart {
+            border-color: #00f0ff;
+            background-color: #141418;
+        }
+        .btn-restart:hover {
+            background-color: #00f0ff;
+            color: #121212;
+            box-shadow: 0 0 10px #00f0ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- 正中間的圖片 -->
+        <div class="image-wrapper">
+            <img src="123.jpg" alt="Velvet" class="game-image">
+        </div>
+
+        <!-- 遊戲對話文字 -->
+        <div id="story-display" class="story-text">
+            載入中...
+        </div>
+
+        <!-- 遊戲選項按鈕 -->
+        <div id="choices-display" class="choices-container">
+            <!-- 由 JavaScript 動態生成 -->
+        </div>
+    </div>
+
+    <script>
+        // 遊戲劇本與分歧邏輯
+        const scriptData = {
+            start: {
+                text: "這位客人你好我是Velvet,請問你要進來喝點下午茶嗎?",
+                choices: [
+                    { text: "是", next: "agree" },
+                    { text: "不是", next: "decline" }
+                ]
+            },
+            decline: {
+                text: "愛進不進!(遊戲結束)",
+                choices: [
+                    { text: "重新來過", next: "start", isRestart: true }
+                ]
+            },
+            agree: {
+                text: "要回答一些問題才可以進來<br><br>第一個問題:我最好的姊妹是誰?",
+                choices: [
+                    { text: "Vox", next: "wrong_sister" },
+                    { text: "Val", next: "correct_sister" },
+                    { text: "Alastor", next: "wrong_sister" }
+                ]
+            },
+            wrong_sister: {
+                text: "答錯了,你不配進來",
+                choices: [
+                    { text: "重新挑戰", next: "start", isRestart: true }
+                ]
+            },
+            correct_sister: {
+                text: "我們公司的名稱是什麼?",
+                choices: [
+                    { text: "3V", next: "win" },
+                    { text: "Hazbin hotel", next: "wrong_company" }
+                ]
+            },
+            wrong_company: {
+                text: "你居然敢把Hazbin hotel跟我們弄反",
+                choices: [
+                    { text: "可惡！再試一次", next: "start", isRestart: true }
+                ]
+            },
+            win: {
+                text: "答對了歡迎光臨!",
+                choices: [
+                    { text: "再玩一次", next: "start", isRestart: true }
+                ]
+            }
+        };
+
+        // 更新畫面邏輯
+        function goToNode(nodeKey) {
+            const node = scriptData[nodeKey];
+            if (!node) return;
+
+            // 更新文字內容 (允許使用 <br> 換行)
+            document.getElementById('story-display').innerHTML = node.text;
+
+            // 清空舊按鈕
+            const choicesZone = document.getElementById('choices-display');
+            choicesZone.innerHTML = '';
+
+            // 產生新按鈕
+            node.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.innerHTML = choice.text;
+                button.classList.add('btn');
+                
+                // 如果是重新開始的按鈕，加上特殊顏色樣式
+                if (choice.isRestart) {
+                    button.classList.add('btn-restart');
+                }
+
+                // 綁定點擊事件
+                button.onclick = () => goToNode(choice.next);
+                choicesZone.appendChild(button);
+            });
+        }
+
+        // 網頁載入完成後自動啟動遊戲
+        window.onload = function() {
+            goToNode('start');
+        };
+    </script>
+</body>
+</html>
